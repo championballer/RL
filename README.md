@@ -1,3 +1,3 @@
-# RL-Udacity
+# RL
 
 Resources and code for udacity's RL
