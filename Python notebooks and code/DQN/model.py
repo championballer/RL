@@ -28,7 +28,7 @@ class QNetwork(nn.Module):
         
         x = state
         for linear in self.hidden_layers:
-            x = torch.tanh(linear(x))
+            x = F.relu(linear(x))
             x = self.dropout(x)
         
         x = self.output(x)

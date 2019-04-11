@@ -88,7 +88,9 @@ class Agent():
 
         ## TODO: compute and minimize the loss
         "*** YOUR CODE HERE ***"
-        output_target = self.qnetwork_target.forward(next_states).detach().max(1)[0].unsqueeze(1)
+        
+        max_actions = self.qnetwork_local.forward(next_states).detach().max(1)[1].unsqueeze(1)
+        output_target = self.qnetwork_target(next_states).gather(1,max_actions)
         td_target = rewards + gamma*(output_target*(1-dones))
         output_local= self.qnetwork_local(states).gather(1, actions)
         
