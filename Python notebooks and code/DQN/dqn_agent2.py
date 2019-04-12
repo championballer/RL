@@ -34,7 +34,7 @@ class Agent():
         self.seed = random.seed(seed)
 
         # Q-Network
-        hidden_layers = [256]
+        hidden_layers = [64,64]
         self.qnetwork_local = QNetwork(state_size, action_size, hidden_layers, seed).to(device)
         self.qnetwork_target = QNetwork(state_size, action_size, hidden_layers, seed).to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=LR)
@@ -90,7 +90,7 @@ class Agent():
         "*** YOUR CODE HERE ***"
         
         max_actions = self.qnetwork_local.forward(next_states).detach().max(1)[1].unsqueeze(1)
-        output_target = self.qnetwork_target(next_states).gather(1,max_actions)
+        output_target = self.qnetwork_target.forward(next_states).gather(1,max_actions)
         td_target = rewards + gamma*(output_target*(1-dones))
         output_local= self.qnetwork_local(states).gather(1, actions)
         
