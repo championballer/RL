@@ -10,4 +10,4 @@ Architecture of Neural Networks :
 Exponential Linear Unit was used instead of ReLU or Leaky ReLU based on the both personal experience and advise from other students on the student hub, for both actor and critic networks. The function used as activation in output layer of actor network was tanh owing to the range of action space being -1 to 1, whereas the activation function used in output layer of critic network was linear acting as value function values meant to act as critic for the agent. 
 
 ![Actor network Code](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/ActorNetwork.png)
-
+![Critic network Code](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/CriticNetwork.png)
