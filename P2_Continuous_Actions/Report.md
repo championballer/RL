@@ -40,4 +40,4 @@ Loss function : Mean square error function
 
 1 learning update per step for both networks 
 ```
-
+![Parameters](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/Parameters.png)
