@@ -1,6 +1,11 @@
 # P2 - Continuous Control  
 
-![Continuouos control gif](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Output.gif)
+<p align="center">
+<img src ="https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Output.gif">
+<br>
+<b> Solved Environment <b>
+</p>
+
 This report details the algorithm and implementation for the Continuous Control project of the Deep Reinforcement Learning Nanodegree on Udacity.
 
 The environment (Version 2) was solved using the DDPG algorithm (suitable for environments with continuous action spaces) which involves the use of four neural networks, two each for both actor and critic. 
