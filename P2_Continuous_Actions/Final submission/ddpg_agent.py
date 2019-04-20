@@ -9,25 +9,20 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-#Agent
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 128        # minibatch size
 GAMMA = 0.99            # discount factor
 TAU = 1e-3              # for soft update of target parameters
-LR_ACTOR = 1e-4 #3e-5 #1e-4         # learning rate of the actor 
-LR_CRITIC = 1e-4 #3e-5 #1e-4        # learning rate of the critic
-WEIGHT_DECAY_actor = 0.0 #3e-4 #0        # L2 weight decay
-WEIGHT_DECAY_critic = 0.0 #1e-6 #0        # L2 weight decay
+LR_ACTOR = 1e-4         # learning rate of the actor 
+LR_CRITIC = 1e-4        # learning rate of the critic
+WEIGHT_DECAY = 0        # L2 weight decay
 
-#to decay exploration as it learns
-EPS_START=1.0
-EPS_END=0.05
-EPS_DECAY=3e-5
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Agent():
     """Interacts with and learns from the environment."""
     
-    def __init__(self, state_size, action_size, num_agents, random_seed):
+    def __init__(self, state_size, action_size, random_seed):
         """Initialize an Agent object.
         
         Params
@@ -36,65 +31,65 @@ class Agent():
             action_size (int): dimension of each action
             random_seed (int): random seed
         """
+        
+        """
+        Base Working for multiple agents
+        ======
+        
+        Many different agents will sample the environment at the same time to get different states, 
+        for which based on the current policy actions will be decided, rewards will be received along with
+        the next states. All the agents update the same experience replay buffer and utilise the same neural 
+        net to decide on the optimal set of actions. This should theoretically increase training efficiency 
+        since so many different states are being experienced at the same time.
+        """
+        
         self.state_size = state_size
         self.action_size = action_size
-        self.num_agents = num_agents
         self.seed = random.seed(random_seed)
 
         # Actor Network (w/ Target Network)
         self.actor_local = Actor(state_size, action_size, random_seed).to(device)
         self.actor_target = Actor(state_size, action_size, random_seed).to(device)
-        self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR, weight_decay=WEIGHT_DECAY_actor)
+        self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=LR_ACTOR)
 
         # Critic Network (w/ Target Network)
         self.critic_local = Critic(state_size, action_size, random_seed).to(device)
         self.critic_target = Critic(state_size, action_size, random_seed).to(device)
-        self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY_critic)
+        self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
         # Noise process
-        #self.noise = OUNoise(action_size, random_seed) #single agent only
-        self.noise = OUNoise((num_agents, action_size), random_seed) #both singe and multiple agent
-        self.eps = EPS_START
+        self.noise = OUNoise(action_size,random_seed)
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
+        
+        #Initial target and local networks with same weights (Student Hub Discussion)
+        self.hard_update(self.actor_local,self.actor_target)
+        self.hard_update(self.critic_local,self.critic_target)
     
-        # Make sure target is initialized with the same weight as the source (found on slack to make big difference)
-        self.hard_update(self.actor_target, self.actor_local)
-        self.hard_update(self.critic_target, self.critic_local)
-
-
     def step(self, states, actions, rewards, next_states, dones):
         """Save experience in replay memory, and use random sample from buffer to learn."""
         # Save experience / reward
-        #Experience from each agent is separately saved (so it works for single or multi agent environment)
-        #This works because each agent is operating in a separate/independent environment
-        for a in range(self.num_agents):
-            self.memory.add(states[a], actions[a], rewards[a], next_states[a], dones[a])
+        for state, action, reward, next_state, done in zip(states, actions,rewards,next_states,dones):
+            self.memory.add(state, action, reward, next_state, done)
 
         # Learn, if enough samples are available in memory
         if len(self.memory) > BATCH_SIZE:
             experiences = self.memory.sample()
             self.learn(experiences, GAMMA)
 
-    def act(self, states, add_noise=True):
+    def act(self, state, add_noise=True):
         """Returns actions for given state as per current policy."""
-        states = torch.from_numpy(states).float().to(device)
+        state = torch.from_numpy(state).float().to(device)
         self.actor_local.eval()
         with torch.no_grad():
-            actions = self.actor_local(states).cpu().data.numpy()
+            action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
         
-        #add noise according to epsilon probability
-        if add_noise and (np.random.random() < self.eps):
-            actions += self.noise.sample()
-            #update the exploration parameter
-            self.eps -= EPS_DECAY
-            if self.eps < EPS_END:
-                self.eps = EPS_END
-            #self.noise.reset() #not sure if need to do this here
-
-        return np.clip(actions, -1, 1)
+        #Same noise gets added to all the action vectors
+        if add_noise:
+            action += self.noise.sample()
+        return np.clip(action, -1, 1)
 
     def reset(self):
         self.noise.reset()
@@ -125,7 +120,6 @@ class Agent():
         # Minimize the loss
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
-        torch.nn.utils.clip_grad_norm(self.critic_local.parameters(), 1.0) #clip the gradient for the critic network (Udacity hint)
         self.critic_optimizer.step()
 
         # ---------------------------- update actor ---------------------------- #
@@ -153,20 +147,16 @@ class Agent():
         """
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
-
-
-    ## from slack - Since you're using DDPG, @gregoriomezquita mentioned that 
-    ## initializing the weights of the target networks to be the same as those 
-    ## of the live networks seemed to make a huge difference
-    def hard_update(self, target, source):
-        for target_param, source_param in zip(target.parameters(), source.parameters()):
-            target_param.data.copy_(source_param.data)
-
+            
+    def hard_update(self,local_model,target_model):
+        
+        for target_param,local_param in zip(target_model.parameters(), local_model.parameters()):
+            target_param.data.update_(local_param.data)
 
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size,seed, mu=0., theta=0.15, sigma=0.2):
         """Initialize parameters and noise process."""
         self.mu = mu * np.ones(size)
         self.theta = theta
@@ -182,7 +172,6 @@ class OUNoise:
     def sample(self):
         """Update internal state and return it as a noise sample."""
         x = self.state
-        #dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
         dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(self.size)
         self.state = x + dx
         return self.state
