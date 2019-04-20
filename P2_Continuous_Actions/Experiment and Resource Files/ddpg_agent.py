@@ -13,7 +13,7 @@ BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 128        # minibatch size
 GAMMA = 0.99            # discount factor
 TAU = 1e-3              # for soft update of target parameters
-LR_ACTOR = 1e-4         # learning rate of the actor 
+LR_ACTOR = 5*1e-4         # learning rate of the actor 
 LR_CRITIC = 1e-4        # learning rate of the critic
 WEIGHT_DECAY = 0        # L2 weight decay
 
@@ -22,7 +22,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class Agent():
     """Interacts with and learns from the environment."""
     
-    def __init__(self, state_size, action_size, random_seed,num_agents=1):
+    def __init__(self, state_size, action_size, random_seed):
         """Initialize an Agent object.
         
         Params
@@ -30,7 +30,6 @@ class Agent():
             state_size (int): dimension of each state
             action_size (int): dimension of each action
             random_seed (int): random seed
-            num_agents (int) : number of agents in the environment 
         """
         
         """
@@ -59,29 +58,25 @@ class Agent():
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
         # Noise process
-        self.noise = OUNoise((num_agents,action_size),random_seed)
+        self.noise = OUNoise(action_size,random_seed)
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
         
-        #Initial target and local networks with same weights (Student Hub Discussion)
-        self.hard_update(self.actor_local,self.actor_target)
-        self.hard_update(self.critic_local,self.critic_target)
+        
     
     def step(self, states, actions, rewards, next_states, dones):
-        """Save experience in replay memory."""
+        """Save experience in replay memory, and use random sample from buffer to learn."""
         # Save experience / reward
         for state, action, reward, next_state, done in zip(states, actions,rewards,next_states,dones):
             self.memory.add(state, action, reward, next_state, done)
-    
-    """To decouple learning from experience collection and use random sample from buffer to learn."""
-    def update(self):
+
         # Learn, if enough samples are available in memory
         if len(self.memory) > BATCH_SIZE:
             experiences = self.memory.sample()
             self.learn(experiences, GAMMA)
 
-    def act(self, state, eps, add_noise=True):
+    def act(self, state, add_noise=True):
         """Returns actions for given state as per current policy."""
         state = torch.from_numpy(state).float().to(device)
         self.actor_local.eval()
@@ -89,7 +84,8 @@ class Agent():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
         
-        if add_noise and np.random.random() < eps:
+        #Same noise gets added to all the action vectors
+        if add_noise:
             action += self.noise.sample()
         return np.clip(action, -1, 1)
 
@@ -123,7 +119,7 @@ class Agent():
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
-        torch.nn.utils.clip_grad_norm(self.critic_local.parameters(),1)
+
         # ---------------------------- update actor ---------------------------- #
         # Compute actor loss
         actions_pred = self.actor_local(states)
@@ -149,11 +145,6 @@ class Agent():
         """
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
-            
-    def hard_update(self,local_model,target_model):
-        
-        for target_param,local_param in zip(target_model.parameters(), local_model.parameters()):
-            target_param.data.copy_(local_param.data)
 
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
