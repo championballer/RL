@@ -1,0 +1,1 @@
+This report details the algorithm and implementation for the Navigation project of the Deep Reinforcement Learning Nanodegree on Udacity.

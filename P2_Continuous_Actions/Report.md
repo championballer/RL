@@ -1,0 +1,1 @@
+This report details the algorithm and implementation for the Continuous Control project of the Deep Reinforcement Learning Nanodegree on Udacity.
