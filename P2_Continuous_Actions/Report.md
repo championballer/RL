@@ -44,6 +44,9 @@ Loss function : Mean square error function
 
 The ipython notebook majorly consists of loading depedencies and initiating the environment and agent. After that we implement the DDPG function with default parameters of 1000 episodes, with maximum of 1000 steps in an episodes, and toggle off (to update in alternate steps if on, implemented to update 10 times in 20 steps as indicated by udacity's implementation of the environment). The function also uses the update_num variable which decides how many updates should happen per step given that a lot of experience is being collected per step. One deque of 100 size and one array named scores_deque and scores respectively keep track of mean scores of all agents for the last 100 and all episodes respectively. Once the mean score of the last 100 episodes crosses 30, the function breaks out of the main loop to conclude that the environment is solved and project is completed. After that the plot for score for all episodes is made. 
 
+![MainCode1](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/MainCode1.png)
+![MainCode2](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/MainCode2.png)
+![MainCode3](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/MainCode3.png)
 In our case the final process took 125 episodes to solve, and the plot for the same is as follows (also present in the implementation).
 
 ![Rewards plot](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/Plot.png)
