@@ -27,15 +27,15 @@ The code for the agent system (generalising for >1 agents, distributed learning)
 ![Agent Code 4](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/Agent4.png)
 
 
-The OUNoise (Added to add exploration in continuous action based environments) class is same as that employed in the ddpg pendlumn with the difference that it is adapted for 20 different agents by passing the num agents argument in the size argument of the class, which allows to sample the required dimensions from the standard normal for noise generation, plus standard normal distribution based noise is added (Student Hub tip). This is followed by the replay buffer class which is exactly same as that of the one in ddpg pendulmn. 
+The OUNoise (Added to add exploration in continuous action based environments) class is same as that employed in the ddpg pendlumn with the difference that it is adapted for 2 different agents by passing the num agents argument in the size argument of the class, which allows to sample the required dimensions from the standard normal for noise generation, plus standard normal distribution based noise is added (Student Hub tip). This is followed by the replay buffer class which is exactly same as that of the one in ddpg pendulmn and the continous control project. 
 
 The parameters for the agent system is as follows :
 ```
 Buffer size (Replay buffer size) : 100000
 Batch size (Mini batch size): 128
 Gamma (Discount rate) : 0.99
-Tau (Soft update influence rate) : 0.001
-Learning rate for both actor and critic networks : 0.0001
+Tau (Soft update influence rate) : 0.2 (Taken from a udacity discussion)
+Learning rate for both actor and critic networks : 0.001 (Taken from a udacity discussion)
 Weight decay for critic : 0
 
 Starting value of epsilon : 1
@@ -47,7 +47,7 @@ Loss function : Mean square error function
 
 1 learning update per step for both networks 
 ```
-![Parameters](https://github.com/championballer/RL/raw/master/P2_Continuous_Actions/Photos/Parameters.png)
+![Parameters](https://github.com/championballer/RL/raw/master/P3_Collab_Compete/Images/Parameters.png)
 
 The ipython notebook majorly consists of loading depedencies and initiating the environment and agent. After that we implement the DDPG function with default parameters of 1000 episodes, with maximum of 1000 steps in an episodes, and toggle off (to update in alternate steps if on, implemented to update 10 times in 20 steps as indicated by udacity's implementation of the environment). The function also uses the update_num variable which decides how many updates should happen per step given that a lot of experience is being collected per step. One deque of 100 size and one array named scores_deque and scores respectively keep track of mean scores of all agents for the last 100 and all episodes respectively. Once the mean score of the last 100 episodes crosses 30, the function breaks out of the main loop to conclude that the environment is solved and project is completed. After that the plot for score for all episodes is made. 
 
