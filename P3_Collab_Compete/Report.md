@@ -60,6 +60,6 @@ In our case the final process took 692 episodes to solve, and the plot for the s
 
 ## Future Possible Improvements:
 
-1. As described by Udacity in the benchmark implementation, the agent would be implemented in TRPO, TNPG, PPO as well as D4PG to compare performance. 
+1. As described by Udacity in the benchmark implementation, the agent would be implemented using MADDPG algorithm to increase stability and efficiency of the model as well as to experimentally obeserve on what parameters MADDPG outplays DDPG for this environment.
 2. Further fine tuning of the hyperparameters for exploration-exploitation dilemma along with other agent parameters will be tried to further optimise the agent's performance in the environment.
 3. Multiple other architectures for both the actor and critic target and local networks will be tried, to increase or decrease training time along with checking up on stability of learning. 
