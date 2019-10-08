@@ -1,6 +1,6 @@
 # Project 1: Navigation
 <p align="center">
-<img src ="https://github.com/championballer/RL/raw/master/P1_Navigation/Navigation.gif">
+<img src ="https://github.com/championballer/Navfetch/raw/master/Navigation.gif">
 <br>
 <b> Solved Environment <b>
 </p>
