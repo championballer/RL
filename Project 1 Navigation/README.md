@@ -4,7 +4,7 @@
 
 For this project, we train an agent to navigate (and collect bananas!) in a large, square world.  
 
-![Navigation gif](https://github.com/championballer/RL/raw/master/Udacity-DRLND/Project 1 Navigation/Navigation.gif)
+![Navigation gif](https://github.com/championballer/RL/raw/master/Udacity-DRLND/Project%201%20Navigation/Navigation.gif)
 
 A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is provided for collecting a blue banana.  Thus, the goal of our agent is to collect as many yellow bananas as possible while avoiding blue bananas.  
 
