@@ -86,8 +86,6 @@ class Agent():
         """
         states, actions, rewards, next_states, dones = experiences
 
-        ## TODO: compute and minimize the loss
-        "*** YOUR CODE HERE ***"
         
         max_actions = self.qnetwork_local.forward(next_states).detach().max(1)[1].unsqueeze(1)
         output_target = self.qnetwork_target.forward(next_states).gather(1,max_actions)
